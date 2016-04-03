@@ -5,6 +5,7 @@ import (
 	"goji.io/pat"
 
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/controllers"
+	"github.com/FcoManueel/calorie-counter/calorie-counter-api/routes/middleware"
 )
 
 func Init() *goji.Mux {
@@ -33,6 +34,9 @@ func Init() *goji.Mux {
 	root.HandleC(pat.New("/admin/*"), adminMux)
 	adminCtrl := controllers.Admin{}
 	adminMux.HandleFuncC(pat.Get("/"), adminCtrl.GetUsers)
+
+	// hook middleware
+	root.UseC(middleware.HTTPLogger)
 
 	return root
 }
