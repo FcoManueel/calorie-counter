@@ -31,12 +31,27 @@ func Init() *goji.Mux {
 	root.HandleC(pat.New("/intakes/*"), intakesMux)
 	intakesCtrl := controllers.Intakes{}
 	intakesMux.HandleFuncC(pat.Get("/"), intakesCtrl.GetAll)
+	intakesMux.HandleFuncC(pat.Post("/"), intakesCtrl.Create)
+	intakesMux.HandleFuncC(pat.Put("/:id"), intakesCtrl.Update)
+	intakesMux.HandleFuncC(pat.Delete("/:id"), intakesCtrl.Disable)
 
 	// intakes routes
 	adminMux := goji.SubMux()
 	root.HandleC(pat.New("/admin/*"), adminMux)
 	adminCtrl := controllers.Admin{}
-	adminMux.HandleFuncC(pat.Get("/"), adminCtrl.GetUsers)
+	adminMux.HandleFuncC(pat.Get("/users"), adminCtrl.GetUsers)
+	adminMux.HandleFuncC(pat.Post("/users"), adminCtrl.CreateUser)
+	adminMux.HandleFuncC(pat.Get("/users/:user_id"), adminCtrl.GetUser)
+	adminMux.HandleFuncC(pat.Put("/users/:user_id"), adminCtrl.UpdateUser)
+	adminMux.HandleFuncC(pat.Delete("/users/:user_id"), adminCtrl.DisableUser)
+
+	/*
+	   //	For later consideration:
+	   	adminMux.HandleFuncC(pat.Get("/users/:user_id/intakes"), adminCtrl.GetUserIntakes)
+	   	adminMux.HandleFuncC(pat.Post("/users/:user_id/intakes"), adminCtrl.CreateUserIntake)
+	   	adminMux.HandleFuncC(pat.Put("/users/:user_id/intakes/:intake_id"), adminCtrl.UpdateUserIntake)
+	   	adminMux.HandleFuncC(pat.Delete("/users/:user_id/intakes/:intake_id"), adminCtrl.DisableUserIntake)
+	*/
 
 	// hook middleware
 	root.UseC(middleware.HTTPLogger)
