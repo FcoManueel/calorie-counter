@@ -31,7 +31,6 @@ func HTTPLogger(h goji.Handler) goji.Handler {
 		h.ServeHTTPC(ctx, lw, r)
 		end := time.Now()
 
-		log.Println("Wololo", "Header:", lw.Header())
 		if lw.Status() == 0 {
 			lw.WriteHeader(http.StatusOK)
 		}
