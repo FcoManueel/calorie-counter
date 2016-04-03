@@ -15,13 +15,16 @@ func Init() *goji.Mux {
 	authMux := goji.SubMux()
 	root.HandleC(pat.New("/auth/*"), authMux)
 	authCtrl := controllers.Auth{}
-	authMux.HandleFuncC(pat.Get("/login"), authCtrl.Login)
+	authMux.HandleFuncC(pat.Post("/signup"), authCtrl.Signup)
+	authMux.HandleFuncC(pat.Post("/login"), authCtrl.Login)
 
 	// users routes
 	usersMux := goji.SubMux()
 	root.HandleC(pat.New("/users/*"), usersMux)
 	usersCtrl := controllers.Users{}
 	usersMux.HandleFuncC(pat.Get("/:id"), usersCtrl.Get)
+	usersMux.HandleFuncC(pat.Put("/:id"), usersCtrl.Update)
+	usersMux.HandleFuncC(pat.Delete("/:id"), usersCtrl.Disable)
 
 	// intakes routes
 	intakesMux := goji.SubMux()
