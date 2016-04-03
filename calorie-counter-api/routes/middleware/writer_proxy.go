@@ -1,11 +1,10 @@
 package middleware
 
+// Copied from the previous goji version: https://github.com/zenazn/goji/blob/master/web/mutil/writer_proxy.go
 import (
 	"io"
 	"net/http"
 )
-
-// Copied from the previous goji version: https://github.com/zenazn/goji/blob/master/web/mutil/writer_proxy.go
 
 // WriterProxy is a proxy around an http.ResponseWriter that allows you to hook
 // into various parts of the response process.
