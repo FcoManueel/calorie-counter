@@ -3,12 +3,16 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/lib/pq"
-	"github.com/tanel/dbmigrate"
-	"gopkg.in/pg.v3"
 	"log"
 	"path/filepath"
 	"time"
+
+	"bytes"
+	_ "github.com/lib/pq"
+	"github.com/satori/go.uuid"
+	"github.com/tanel/dbmigrate"
+	"golang.org/x/crypto/scrypt"
+	"gopkg.in/pg.v3"
 )
 
 var db *pg.DB
@@ -54,4 +58,30 @@ func Migrate(cfg Config) error {
 		return err
 	}
 	return nil
+}
+
+// NewUUID generates a valid uuid v4
+func NewUUID() string {
+	return uuid.NewV4().String()
+}
+
+// IsUUID checks validity of UUID
+func IsUUID(s string) bool {
+	if len(s) != 36 {
+		return false
+	}
+	if _, err := uuid.FromString(s); err != nil {
+		return false
+	}
+	return true
+}
+
+// Hash uses scrypt to Hash a string
+func Hash(password string, salt []byte) (string, error) {
+	buffer := bytes.NewBuffer(nil)
+	key, err := scrypt.Key([]byte(password), salt, 16384, 8, 1, 32)
+	if err == nil {
+		fmt.Fprintf(buffer, "%x", key)
+	}
+	return buffer.String(), err
 }
