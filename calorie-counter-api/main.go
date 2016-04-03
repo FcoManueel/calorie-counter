@@ -9,9 +9,17 @@ import (
 )
 
 func init() {
-	if err := db.Migrate("gouser", "gouser", "127.0.0.1", "calories_dev"); err != nil {
-		log.Fatal("[db-migrate] Error while applying migrations: ", err.Error())
+	dbConfig := db.Config{
+		User:     "gouser",
+		Password: "",
+		Host:     "127.0.0.1",
+		Database: "calories_dev",
 	}
+
+	if err := db.Migrate(dbConfig); err != nil {
+		log.Fatalln("[db-migrate] Error while applying migrations: ", err.Error())
+	}
+	db.Init(dbConfig)
 }
 
 func main() {
