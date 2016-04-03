@@ -28,6 +28,7 @@ const userColumns = `id, role, name, email, password, goal_calories`
 const RoleUser = "user"
 
 func (u *userRepository) Get(userID string) (*models.User, error) {
+	log.Println("[user-get]", "ID:", userID)
 	if !IsUUID(userID) {
 		return nil, errors.New(fmt.Sprintf("Invalid user ID: %s", userID))
 	}
@@ -40,8 +41,9 @@ func (u *userRepository) Get(userID string) (*models.User, error) {
 }
 
 func (u *userRepository) GetAll() (models.Users, error) {
+	log.Println("[user-get-all]")
 	users := make(models.Users, 0)
-	if _, err := db.Query(&users, fmt.Sprintf(`SELECT %s FROM users WHERE disabled != NULL`, userColumns)); err != nil {
+	if _, err := db.Query(&users, fmt.Sprintf(`SELECT %s FROM users WHERE disabled_at IS NULL`, userColumns)); err != nil {
 		return nil, errors.New(fmt.Sprintf("Error while fetching users: %s", err.Error()))
 	}
 	return users, nil
@@ -70,6 +72,7 @@ func (u *userRepository) Create(user *models.User) (*models.User, error) {
 }
 
 func (u *userRepository) Update(user *models.User) (err error) {
+	log.Println("[user-update]", "ID:", user.ID)
 	var updateFields []string
 	if user.Name != "" {
 		updateFields = append(updateFields, "name=?name")
@@ -97,6 +100,7 @@ func (u *userRepository) Update(user *models.User) (err error) {
 }
 
 func (u *userRepository) Disable(userID string) error {
+	log.Println("[user-disable]", "ID:", userID)
 	if _, err := db.ExecOne(`UPDATE users SET disabled_at = now() WHERE id = ?`, userID); err != nil {
 		return errors.New(fmt.Sprintf("Error while disabling user. ID: %s. Error: %s", userID, err.Error()))
 	}
