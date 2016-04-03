@@ -37,6 +37,7 @@ func Init() *goji.Mux {
 
 	// hook middleware
 	root.UseC(middleware.HTTPLogger)
+	root.UseC(middleware.JSONHeader)
 
 	return root
 }
