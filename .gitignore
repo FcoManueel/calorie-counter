@@ -1,0 +1,4 @@
+## Ignores for intelliJ
+.idea/
+*.iws
+/out/
