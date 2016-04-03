@@ -30,8 +30,9 @@ func Init() *goji.Mux {
 	intakesMux := goji.SubMux()
 	root.HandleC(pat.New("/intakes/*"), intakesMux)
 	intakesCtrl := controllers.Intakes{}
-	intakesMux.HandleFuncC(pat.Get("/"), intakesCtrl.GetAll)
 	intakesMux.HandleFuncC(pat.Post("/"), intakesCtrl.Create)
+	intakesMux.HandleFuncC(pat.Get("/"), intakesCtrl.GetAll)
+	intakesMux.HandleFuncC(pat.Get("/:id"), intakesCtrl.Get)
 	intakesMux.HandleFuncC(pat.Put("/:id"), intakesCtrl.Update)
 	intakesMux.HandleFuncC(pat.Delete("/:id"), intakesCtrl.Disable)
 
