@@ -3,11 +3,12 @@ package controllers
 import (
 	"errors"
 	"fmt"
+	"net/http"
+
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/db"
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/models"
 	"goji.io/pat"
 	"golang.org/x/net/context"
-	"net/http"
 )
 
 type Admin struct{}

@@ -48,14 +48,11 @@ func Init() *goji.Mux {
 	admin.HandleFuncC(pat.Get("/users/:user_id"), adminCtrl.GetUser)
 	admin.HandleFuncC(pat.Put("/users/:user_id"), adminCtrl.UpdateUser)
 	admin.HandleFuncC(pat.Delete("/users/:user_id"), adminCtrl.DisableUser)
-
-	/*
-	   //	For later consideration:
-	   	adminMux.HandleFuncC(pat.Get("/users/:user_id/intakes"), adminCtrl.GetUserIntakes)
-	   	adminMux.HandleFuncC(pat.Post("/users/:user_id/intakes"), adminCtrl.CreateUserIntake)
-	   	adminMux.HandleFuncC(pat.Put("/users/:user_id/intakes/:intake_id"), adminCtrl.UpdateUserIntake)
-	   	adminMux.HandleFuncC(pat.Delete("/users/:user_id/intakes/:intake_id"), adminCtrl.DisableUserIntake)
-	*/
+	admin.HandleFuncC(pat.Get("/users/:user_id/intakes"), adminCtrl.GetUserIntakes)
+	admin.HandleFuncC(pat.Get("/users/:user_id/intakes/:intake_id"), adminCtrl.GetUserIntake)
+	admin.HandleFuncC(pat.Post("/users/:user_id/intakes"), adminCtrl.CreateUserIntake)
+	admin.HandleFuncC(pat.Put("/users/:user_id/intakes/:intake_id"), adminCtrl.UpdateUserIntake)
+	admin.HandleFuncC(pat.Delete("/users/:user_id/intakes/:intake_id"), adminCtrl.DisableUserIntake)
 
 	// hook middleware
 	root.UseC(middleware.HTTPLogger)

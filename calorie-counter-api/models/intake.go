@@ -23,5 +23,5 @@ func (intakes *Intakes) NewRecord() interface{} {
 
 // IntakesData is a namespaced wrapper for intakes
 type IntakesData struct {
-	Data Intakes `json:"intakes`
+	Data Intakes `json:"intakes"`
 }

@@ -6,20 +6,17 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/FcoManueel/calorie-counter/calorie-counter-api/ccontext"
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/db"
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/models"
 	"goji.io/pat"
 	"golang.org/x/net/context"
 )
 
-type Intakes struct{}
-
-func (in *Intakes) Get(ctx context.Context, w http.ResponseWriter, req *http.Request) {
+func (a *Admin) GetUserIntake(ctx context.Context, w http.ResponseWriter, req *http.Request) {
 	log.Println("[ctrl-intakes-get]")
 	req.ParseForm()
-	userID := ccontext.GetUserID(ctx)
-	intakeID := pat.Param(ctx, "id")
+	userID := pat.Param(ctx, "user_id")
+	intakeID := pat.Param(ctx, "intake_id")
 
 	intake, err := db.Intakes.Get(ctx, userID, intakeID)
 	if err != nil {
@@ -29,10 +26,10 @@ func (in *Intakes) Get(ctx context.Context, w http.ResponseWriter, req *http.Req
 	ServeJSON(ctx, w, intake)
 }
 
-func (in *Intakes) GetAll(ctx context.Context, w http.ResponseWriter, req *http.Request) {
+func (a *Admin) GetUserIntakes(ctx context.Context, w http.ResponseWriter, req *http.Request) {
 	log.Println("[ctrl-intakes-get-for-user]")
 	req.ParseForm()
-	userID := ccontext.GetUserID(ctx)
+	userID := pat.Param(ctx, "user_id")
 	intakes, err := db.Intakes.GetAll(ctx, userID)
 	if err != nil {
 		ServeError(ctx, w, err)
@@ -41,12 +38,12 @@ func (in *Intakes) GetAll(ctx context.Context, w http.ResponseWriter, req *http.
 	ServeJSON(ctx, w, models.IntakesData{Data: intakes})
 }
 
-func (in *Intakes) Create(ctx context.Context, w http.ResponseWriter, req *http.Request) {
+func (a *Admin) CreateUserIntake(ctx context.Context, w http.ResponseWriter, req *http.Request) {
 	log.Println("[ctrl-intakes-create]")
 	intake := &models.Intake{}
 	ParseBody(ctx, intake, req)
 
-	intake.UserID = ccontext.GetUserID(ctx)
+	intake.UserID = pat.Param(ctx, "user_id")
 	intake, err := db.Intakes.Create(ctx, intake)
 	if err != nil {
 		ServeError(ctx, w, errors.New(fmt.Sprintf("Error while creating intake. Error: %s", err.Error())))
@@ -54,14 +51,14 @@ func (in *Intakes) Create(ctx context.Context, w http.ResponseWriter, req *http.
 	ServeJSON(ctx, w, intake)
 }
 
-func (in *Intakes) Update(ctx context.Context, w http.ResponseWriter, req *http.Request) {
-	intakeID := pat.Param(ctx, "id")
+func (a *Admin) UpdateUserIntake(ctx context.Context, w http.ResponseWriter, req *http.Request) {
+	intakeID := pat.Param(ctx, "intake_id")
 	log.Println("[ctrl-intakes-update]", "ID:", intakeID)
 
 	intake := &models.Intake{}
 	ParseBody(ctx, intake, req)
 	intake.ID = intakeID
-	intake.UserID = ccontext.GetUserID(ctx)
+	intake.UserID = pat.Param(ctx, "user_id")
 
 	if err := db.Intakes.Update(ctx, intake); err != nil {
 		ServeError(ctx, w, errors.New(fmt.Sprintf("Error while updating intake. ID: %s, Error: %s", intake.ID, err.Error())))
@@ -69,11 +66,11 @@ func (in *Intakes) Update(ctx context.Context, w http.ResponseWriter, req *http.
 	ServeJSON(ctx, w, intake)
 }
 
-func (in *Intakes) Disable(ctx context.Context, w http.ResponseWriter, req *http.Request) {
-	intakeID := pat.Param(ctx, "id")
+func (a *Admin) DisableUserIntake(ctx context.Context, w http.ResponseWriter, req *http.Request) {
+	intakeID := pat.Param(ctx, "intake_id")
 	log.Println("[ctrl-intakes-disable]", "ID:", intakeID)
 
-	userID := ccontext.GetUserID(ctx)
+	userID := pat.Param(ctx, "user_id")
 	if err := db.Intakes.Disable(ctx, intakeID, userID); err != nil {
 		ServeError(ctx, w, errors.New(fmt.Sprintf("Error while disabling intake. ID: %s, Error: %s", intakeID, err.Error())))
 	}
