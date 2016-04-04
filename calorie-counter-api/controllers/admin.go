@@ -32,7 +32,7 @@ func (a *Admin) CreateUser(ctx context.Context, w http.ResponseWriter, req *http
 		ServeError(ctx, w, err)
 		return
 	}
-
+	w.WriteHeader(http.StatusCreated)
 	ServeJSON(ctx, w, user)
 }
 func (a *Admin) GetUser(ctx context.Context, w http.ResponseWriter, req *http.Request) {

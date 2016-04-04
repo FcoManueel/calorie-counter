@@ -45,7 +45,9 @@ func (a *Admin) CreateUserIntake(ctx context.Context, w http.ResponseWriter, req
 	intake, err := db.Intakes.Create(ctx, intake)
 	if err != nil {
 		ServeError(ctx, w, err)
+		return
 	}
+	w.WriteHeader(http.StatusCreated)
 	ServeJSON(ctx, w, intake)
 }
 
@@ -60,6 +62,7 @@ func (a *Admin) UpdateUserIntake(ctx context.Context, w http.ResponseWriter, req
 
 	if err := db.Intakes.Update(ctx, intake); err != nil {
 		ServeError(ctx, w, err)
+		return
 	}
 	ServeJSON(ctx, w, intake)
 }
@@ -71,6 +74,7 @@ func (a *Admin) DisableUserIntake(ctx context.Context, w http.ResponseWriter, re
 	userID := pat.Param(ctx, "user_id")
 	if err := db.Intakes.Disable(ctx, intakeID, userID); err != nil {
 		ServeError(ctx, w, err)
+		return
 	}
 	http.Redirect(w, req, "/", http.StatusOK)
 }

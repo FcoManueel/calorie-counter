@@ -48,7 +48,9 @@ func (in *Intakes) Create(ctx context.Context, w http.ResponseWriter, req *http.
 	intake, err := db.Intakes.Create(ctx, intake)
 	if err != nil {
 		ServeError(ctx, w, err)
+		return
 	}
+	w.WriteHeader(http.StatusCreated)
 	ServeJSON(ctx, w, intake)
 }
 
@@ -63,6 +65,7 @@ func (in *Intakes) Update(ctx context.Context, w http.ResponseWriter, req *http.
 
 	if err := db.Intakes.Update(ctx, intake); err != nil {
 		ServeError(ctx, w, err)
+		return
 	}
 	ServeJSON(ctx, w, intake)
 }
@@ -74,6 +77,7 @@ func (in *Intakes) Disable(ctx context.Context, w http.ResponseWriter, req *http
 	userID := ccontext.GetUserID(ctx)
 	if err := db.Intakes.Disable(ctx, intakeID, userID); err != nil {
 		ServeError(ctx, w, err)
+		return
 	}
 	http.Redirect(w, req, "/", http.StatusOK)
 }
