@@ -23,7 +23,7 @@ func (a *Auth) Signup(ctx context.Context, w http.ResponseWriter, req *http.Requ
 	user := &models.User{}
 	ParseBody(ctx, user, req)
 
-	user.Role = db.RoleUser
+	user.Role = models.RoleUser
 	var err error
 	if user, err = db.Users.Create(ctx, user); err != nil {
 		ServeError(ctx, w, errors.New(fmt.Sprintf("Error on signup. Error: %s", err.Error())))

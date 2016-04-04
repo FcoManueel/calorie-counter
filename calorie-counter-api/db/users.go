@@ -27,7 +27,6 @@ func init() {
 }
 
 const userColumns = `id, role, name, email, password, goal_calories`
-const RoleUser = "user"
 
 func (u *userRepository) Get(ctx context.Context, userID string) (*models.User, error) {
 	log.Println("[user-get]", "ID:", userID)

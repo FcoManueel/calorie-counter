@@ -24,7 +24,7 @@ func Init() *goji.Mux {
 
 	// users routes
 	usersCtrl := controllers.Users{}
-	v1.HandleFuncC(pat.Get("/users/:id"), usersCtrl.Get)
+	v1.HandleFuncC(pat.Get("/users"), usersCtrl.Get)
 	v1.HandleFuncC(pat.Put("/users/:id"), usersCtrl.Update)
 	v1.HandleFuncC(pat.Delete("/users/:id"), usersCtrl.Disable)
 
@@ -36,9 +36,12 @@ func Init() *goji.Mux {
 	v1.HandleFuncC(pat.Put("/intakes/:id"), intakesCtrl.Update)
 	v1.HandleFuncC(pat.Delete("/intakes/:id"), intakesCtrl.Disable)
 
-	// intakes routes
 	admin := goji.SubMux()
+	admin.UseC(middleware.BearerAuth)
+	admin.UseC(middleware.RequireAdmin)
 	root.HandleC(pat.New("/admin/*"), admin)
+
+	// admin routes
 	adminCtrl := controllers.Admin{}
 	admin.HandleFuncC(pat.Get("/users"), adminCtrl.GetUsers)
 	admin.HandleFuncC(pat.Post("/users"), adminCtrl.CreateUser)

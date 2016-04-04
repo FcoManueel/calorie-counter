@@ -2,6 +2,11 @@ package models
 
 import "time"
 
+const (
+	RoleUser  = "user"
+	RoleAdmin = "admin"
+)
+
 type User struct {
 	ID           string     `json:"id"`
 	Email        string     `json:"email"`
@@ -19,4 +24,8 @@ func (users *Users) NewRecord() interface{} {
 	user := &User{}
 	*users = append(*users, user)
 	return user
+}
+
+type UsersData struct {
+	Data Users `json:"users"`
 }

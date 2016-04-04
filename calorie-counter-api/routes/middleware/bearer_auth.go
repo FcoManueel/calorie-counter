@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/FcoManueel/calorie-counter/calorie-counter-api/ccontext"
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/controllers"
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/db"
 	"github.com/dgrijalva/jwt-go"
@@ -14,7 +15,8 @@ import (
 
 func BearerAuth(h goji.Handler) goji.Handler {
 	handler := func(ctx context.Context, w http.ResponseWriter, req *http.Request) {
-		if err := validateBearerToken(ctx, req); err != nil {
+		ctx, err := validateBearerToken(ctx, req)
+		if err != nil {
 			controllers.ServeError(ctx, w, err)
 			return
 		}
@@ -23,25 +25,25 @@ func BearerAuth(h goji.Handler) goji.Handler {
 	return goji.HandlerFunc(handler)
 }
 
-func validateBearerToken(ctx context.Context, req *http.Request) error {
+func validateBearerToken(ctx context.Context, req *http.Request) (context.Context, error) {
 	token, err := jwt.ParseFromRequest(req, func(*jwt.Token) (interface{}, error) { return []byte(db.JWTSigningKey), nil })
 	if err != nil {
-		return err
+		return nil, err
 	}
 	userID := token.Claims["sub"].(string)
 	if !db.IsUUID(userID) {
-		return errors.New("Invalid userID in bearerToken")
+		return nil, errors.New("Invalid userID in bearerToken")
 	}
 	user, err := db.Users.Get(ctx, userID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if user.DisableAt != nil {
-		return errors.New("Disabled user")
+		return nil, errors.New("Disabled user")
 	}
-	ctx = context.WithValue(ctx, "userID", userID)
 	role := token.Claims["scope"].(string)
-	ctx = context.WithValue(ctx, "role", role)
+	ctx = ccontext.SetRole(ctx, role)
+	ctx = ccontext.SetUserID(ctx, userID)
 	log.Println(ctx, " (bearer-auth) Ok", "userID", userID, "role", role)
-	return nil
+	return ctx, nil
 }
