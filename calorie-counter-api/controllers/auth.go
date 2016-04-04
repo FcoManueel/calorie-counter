@@ -3,21 +3,21 @@ package controllers
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/db"
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/models"
 	"github.com/SermoDigital/jose/crypto"
 	"github.com/SermoDigital/jose/jws"
 	"github.com/SermoDigital/jose/jwt"
 	"golang.org/x/net/context"
-	"net/http"
-	"strings"
-	"time"
 )
 
 type Auth struct{}
 
 const tokenExpiration = 10 * time.Hour
-const signingKey = "verySecretSecret" // obviously this should be treated in a more sensitive way
 
 func (a *Auth) Signup(ctx context.Context, w http.ResponseWriter, req *http.Request) {
 	user := &models.User{}
@@ -38,7 +38,8 @@ func (a *Auth) Login(ctx context.Context, w http.ResponseWriter, req *http.Reque
 	ParseBody(form, req)
 	authToken, err := IssueToken(ctx, form.Email, form.Password)
 	if err != nil {
-		ServeError(ctx, w, errors.New(fmt.Sprintf("Error on signin. Error: %s", err.Error())))
+		ServeError(ctx, w, errors.New(fmt.Sprintf("Login error: %s", err.Error())))
+		return
 	}
 	ServeJSON(ctx, w, authToken)
 }
@@ -51,13 +52,20 @@ func IssueToken(ctx context.Context, email, password string) (*models.AuthToken,
 	if user.DisableAt != nil {
 		return nil, errors.New("Disabled user")
 	}
-	tokenID := db.NewUUID()
+	var hashedPassword string
+	if hashedPassword, err = db.Hash(password, []byte(user.ID)); err != nil {
+		return nil, errors.New(fmt.Sprintf("Error while hashing: %s", err.Error()))
+	}
+	if user.Password != hashedPassword {
+		return nil, errors.New("Wrong password")
+	}
 
+	tokenID := db.NewUUID()
 	jwt, err := createAuthToken(ctx, tokenID, user.ID, user.Role)
 	if err != nil {
 		return nil, err
 	}
-	authToken, err := jwt.Serialize([]byte(signingKey))
+	authToken, err := jwt.Serialize([]byte(db.JWTSigningKey))
 	if err != nil {
 		return nil, err
 	}
