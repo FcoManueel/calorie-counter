@@ -21,11 +21,11 @@ const tokenExpiration = 10 * time.Hour
 
 func (a *Auth) Signup(ctx context.Context, w http.ResponseWriter, req *http.Request) {
 	user := &models.User{}
-	ParseBody(user, req)
+	ParseBody(ctx, user, req)
 
 	user.Role = db.RoleUser
 	var err error
-	if user, err = db.Users.Create(user); err != nil {
+	if user, err = db.Users.Create(ctx, user); err != nil {
 		ServeError(ctx, w, errors.New(fmt.Sprintf("Error on signup. Error: %s", err.Error())))
 		return
 	}
@@ -35,7 +35,7 @@ func (a *Auth) Signup(ctx context.Context, w http.ResponseWriter, req *http.Requ
 
 func (a *Auth) Login(ctx context.Context, w http.ResponseWriter, req *http.Request) {
 	form := &models.SignInForm{}
-	ParseBody(form, req)
+	ParseBody(ctx, form, req)
 	authToken, err := IssueToken(ctx, form.Email, form.Password)
 	if err != nil {
 		ServeError(ctx, w, errors.New(fmt.Sprintf("Login error: %s", err.Error())))
@@ -45,7 +45,7 @@ func (a *Auth) Login(ctx context.Context, w http.ResponseWriter, req *http.Reque
 }
 
 func IssueToken(ctx context.Context, email, password string) (*models.AuthToken, error) {
-	user, err := db.Users.GetByEmail(strings.ToLower(email))
+	user, err := db.Users.GetByEmail(ctx, strings.ToLower(email))
 	if err != nil {
 		return nil, err
 	}

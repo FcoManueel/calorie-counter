@@ -32,7 +32,7 @@ func validateBearerToken(ctx context.Context, req *http.Request) error {
 	if !db.IsUUID(userID) {
 		return errors.New("Invalid userID in bearerToken")
 	}
-	user, err := db.Users.Get(userID)
+	user, err := db.Users.Get(ctx, userID)
 	if err != nil {
 		return err
 	}

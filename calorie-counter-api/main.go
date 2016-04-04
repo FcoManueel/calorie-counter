@@ -6,6 +6,7 @@ import (
 
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/db"
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/routes"
+	"golang.org/x/net/context"
 )
 
 func init() {
@@ -15,11 +16,11 @@ func init() {
 		Host:     "127.0.0.1",
 		Database: "calories_dev",
 	}
-
-	if err := db.Migrate(dbConfig); err != nil {
+	ctx := context.Background()
+	if err := db.Migrate(ctx, dbConfig); err != nil {
 		log.Fatalln("[db-migrate] Error while applying migrations: ", err.Error())
 	}
-	db.Init(dbConfig)
+	db.Init(ctx, dbConfig)
 }
 
 func main() {

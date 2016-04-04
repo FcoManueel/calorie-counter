@@ -22,7 +22,7 @@ func (a *Intakes) Get(ctx context.Context, w http.ResponseWriter, req *http.Requ
 	userID := stubUserID
 	intakeID := pat.Param(ctx, "id")
 
-	intake, err := db.Intakes.Get(userID, intakeID)
+	intake, err := db.Intakes.Get(ctx, userID, intakeID)
 	if err != nil {
 		ServeError(ctx, w, err)
 		return
@@ -34,7 +34,7 @@ func (a *Intakes) GetAll(ctx context.Context, w http.ResponseWriter, req *http.R
 	log.Println("[ctrl-intakes-get-for-user]")
 	req.ParseForm()
 	userID := stubUserID
-	intakes, err := db.Intakes.GetAll(userID)
+	intakes, err := db.Intakes.GetAll(ctx, userID)
 	if err != nil {
 		ServeError(ctx, w, err)
 		return
@@ -45,10 +45,10 @@ func (a *Intakes) GetAll(ctx context.Context, w http.ResponseWriter, req *http.R
 func (a *Intakes) Create(ctx context.Context, w http.ResponseWriter, req *http.Request) {
 	log.Println("[ctrl-intakes-create]")
 	intake := &models.Intake{}
-	ParseBody(intake, req)
+	ParseBody(ctx, intake, req)
 
 	intake.UserID = stubUserID
-	intake, err := db.Intakes.Create(intake)
+	intake, err := db.Intakes.Create(ctx, intake)
 	if err != nil {
 		ServeError(ctx, w, errors.New(fmt.Sprintf("Error while creating intake. Error: %s", err.Error())))
 	}
@@ -60,11 +60,11 @@ func (a *Intakes) Update(ctx context.Context, w http.ResponseWriter, req *http.R
 	log.Println("[ctrl-intakes-update]", "ID:", intakeID)
 
 	intake := &models.Intake{}
-	ParseBody(intake, req)
+	ParseBody(ctx, intake, req)
 	intake.ID = intakeID
 	intake.UserID = stubUserID
 
-	if err := db.Intakes.Update(intake); err != nil {
+	if err := db.Intakes.Update(ctx, intake); err != nil {
 		ServeError(ctx, w, errors.New(fmt.Sprintf("Error while updating intake. ID: %s, Error: %s", intake.ID, err.Error())))
 	}
 	ServeJSON(ctx, w, intake)
@@ -75,7 +75,7 @@ func (a *Intakes) Disable(ctx context.Context, w http.ResponseWriter, req *http.
 	log.Println("[ctrl-intakes-disable]", "ID:", intakeID)
 
 	userID := stubUserID
-	if err := db.Intakes.Disable(intakeID, userID); err != nil {
+	if err := db.Intakes.Disable(ctx, intakeID, userID); err != nil {
 		ServeError(ctx, w, errors.New(fmt.Sprintf("Error while disabling intake. ID: %s, Error: %s", intakeID, err.Error())))
 	}
 	http.Redirect(w, req, "/", http.StatusOK)

@@ -12,6 +12,7 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/tanel/dbmigrate"
 	"golang.org/x/crypto/scrypt"
+	"golang.org/x/net/context"
 	"gopkg.in/pg.v3"
 )
 
@@ -25,7 +26,7 @@ type Config struct {
 }
 
 // Init starts the connections with the database
-func Init(cfg Config) *pg.DB {
+func Init(ctx context.Context, cfg Config) *pg.DB {
 	if db == nil {
 		log.Println("[init-db]", "user", cfg.User, "host", cfg.Host, "database", cfg.Database)
 		db = pg.Connect(&pg.Options{
@@ -43,7 +44,7 @@ func Init(cfg Config) *pg.DB {
 }
 
 // Migrate applies migrations in db/migrations directory
-func Migrate(cfg Config) error {
+func Migrate(ctx context.Context, cfg Config) error {
 	log.Println("[db-migrate]", "user", cfg.User, "host", cfg.Host, "database", cfg.Database)
 	pgDb, err := sql.Open("postgres",
 		fmt.Sprintf("user=%s password=%s host=%s dbname=%s sslmode=disable",

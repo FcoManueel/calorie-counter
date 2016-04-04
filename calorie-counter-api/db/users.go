@@ -4,17 +4,18 @@ import (
 	"errors"
 	"fmt"
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/models"
+	"golang.org/x/net/context"
 	"log"
 	"strings"
 )
 
 type UserRepository interface {
-	Get(userID string) (*models.User, error)
-	GetByEmail(email string) (*models.User, error)
-	GetAll() (models.Users, error)
-	Create(user *models.User) (*models.User, error)
-	Update(user *models.User) error
-	Disable(userID string) error
+	Get(ctx context.Context, userID string) (*models.User, error)
+	GetByEmail(ctx context.Context, email string) (*models.User, error)
+	GetAll(ctx context.Context) (models.Users, error)
+	Create(ctx context.Context, user *models.User) (*models.User, error)
+	Update(ctx context.Context, user *models.User) error
+	Disable(ctx context.Context, userID string) error
 }
 
 var Users UserRepository
@@ -28,7 +29,7 @@ func init() {
 const userColumns = `id, role, name, email, password, goal_calories`
 const RoleUser = "user"
 
-func (u *userRepository) Get(userID string) (*models.User, error) {
+func (u *userRepository) Get(ctx context.Context, userID string) (*models.User, error) {
 	log.Println("[user-get]", "ID:", userID)
 	if !IsUUID(userID) {
 		return nil, errors.New(fmt.Sprintf("Invalid user ID: %s", userID))
@@ -41,7 +42,7 @@ func (u *userRepository) Get(userID string) (*models.User, error) {
 	return user, nil
 }
 
-func (u *userRepository) GetByEmail(email string) (*models.User, error) {
+func (u *userRepository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
 	log.Println("[user-get]", "Email:", email)
 
 	user := &models.User{}
@@ -51,7 +52,7 @@ func (u *userRepository) GetByEmail(email string) (*models.User, error) {
 	return user, nil
 }
 
-func (u *userRepository) GetAll() (models.Users, error) {
+func (u *userRepository) GetAll(ctx context.Context) (models.Users, error) {
 	log.Println("[user-get-all]")
 	users := make(models.Users, 0)
 	if _, err := db.Query(&users, fmt.Sprintf(`SELECT %s FROM users WHERE disabled_at IS NULL`, userColumns)); err != nil {
@@ -60,7 +61,7 @@ func (u *userRepository) GetAll() (models.Users, error) {
 	return users, nil
 }
 
-func (u *userRepository) Create(user *models.User) (*models.User, error) {
+func (u *userRepository) Create(ctx context.Context, user *models.User) (*models.User, error) {
 	log.Println("[user-create]", "Email:", user.Email)
 	if user.ID == "" {
 		user.ID = NewUUID()
@@ -84,7 +85,7 @@ func (u *userRepository) Create(user *models.User) (*models.User, error) {
 	return user, nil
 }
 
-func (u *userRepository) Update(user *models.User) (err error) {
+func (u *userRepository) Update(ctx context.Context, user *models.User) (err error) {
 	log.Println("[user-update]", "ID:", user.ID)
 	var updateFields []string
 	if user.Name != "" {
@@ -113,7 +114,7 @@ func (u *userRepository) Update(user *models.User) (err error) {
 	return nil
 }
 
-func (u *userRepository) Disable(userID string) error {
+func (u *userRepository) Disable(ctx context.Context, userID string) error {
 	log.Println("[user-disable]", "ID:", userID)
 	if _, err := db.ExecOne(`UPDATE users SET disabled_at = now() WHERE id = ?`, userID); err != nil {
 		return errors.New(fmt.Sprintf("Error while disabling user. ID: %s. Error: %s", userID, err.Error()))

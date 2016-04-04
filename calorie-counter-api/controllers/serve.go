@@ -8,7 +8,7 @@ import (
 )
 
 // ParseBody message into a struct
-func ParseBody(message interface{}, r *http.Request) error {
+func ParseBody(ctx context.Context, message interface{}, r *http.Request) error {
 	if r.ContentLength == 0 {
 		return errors.New("Empty request body")
 	}
