@@ -10,6 +10,7 @@
     - `go get gopkg.in/pg.v3`
     - `go get github.com/rs/cors`
     - `go get github.com/SermoDigital/jose`
+    - `go get gopkg.in/stretchr/testify.v1/assert`
     
 2. Create database user/table (check instructions at the top of db/migrate/001_initial.sql)
 3. Run the server with `go run main.go`
