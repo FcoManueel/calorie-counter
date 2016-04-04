@@ -10,6 +10,7 @@ import (
 
 type UserRepository interface {
 	Get(userID string) (*models.User, error)
+	GetByEmail(email string) (*models.User, error)
 	GetAll() (models.Users, error)
 	Create(user *models.User) (*models.User, error)
 	Update(user *models.User) error
@@ -33,9 +34,19 @@ func (u *userRepository) Get(userID string) (*models.User, error) {
 		return nil, errors.New(fmt.Sprintf("Invalid user ID: %s", userID))
 	}
 
-	user := &models.User{ID: userID}
-	if _, err := db.QueryOne(user, fmt.Sprintf(`SELECT %s FROM users WHERE id = ?id`, userColumns), user); err != nil {
+	user := &models.User{}
+	if _, err := db.QueryOne(user, fmt.Sprintf(`SELECT %s FROM users WHERE id=?`, userColumns), userID); err != nil {
 		return nil, errors.New(fmt.Sprintf("No user found. ID: %s", userID))
+	}
+	return user, nil
+}
+
+func (u *userRepository) GetByEmail(email string) (*models.User, error) {
+	log.Println("[user-get]", "Email:", email)
+
+	user := &models.User{}
+	if _, err := db.QueryOne(user, fmt.Sprintf(`SELECT %s FROM users WHERE email = ?`, userColumns), email); err != nil {
+		return nil, errors.New(fmt.Sprintf("No user found. Email: %s", email))
 	}
 	return user, nil
 }
@@ -63,6 +74,8 @@ func (u *userRepository) Create(user *models.User) (*models.User, error) {
 		}
 		user.Password = key
 	}
+	user.Email = strings.ToLower(user.Email)
+
 	_, err := db.ExecOne(`INSERT INTO users (id, role, name, email, password, goal_calories)
 	VALUES (?id, ?role, ?name, ?email, ?password, ?goal_calories)`, user)
 	if err != nil {
@@ -78,6 +91,7 @@ func (u *userRepository) Update(user *models.User) (err error) {
 		updateFields = append(updateFields, "name=?name")
 	}
 	if user.Email != "" {
+		user.Email = strings.ToLower(user.Email)
 		updateFields = append(updateFields, "email=?email")
 	}
 	if user.Password != "" {

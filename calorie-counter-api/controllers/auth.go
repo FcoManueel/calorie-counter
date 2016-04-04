@@ -5,11 +5,19 @@ import (
 	"fmt"
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/db"
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/models"
+	"github.com/SermoDigital/jose/crypto"
+	"github.com/SermoDigital/jose/jws"
+	"github.com/SermoDigital/jose/jwt"
 	"golang.org/x/net/context"
 	"net/http"
+	"strings"
+	"time"
 )
 
 type Auth struct{}
+
+const tokenExpiration = 10 * time.Hour
+const signingKey = "verySecretSecret" // obviously this should be treated in a more sensitive way
 
 func (a *Auth) Signup(ctx context.Context, w http.ResponseWriter, req *http.Request) {
 	user := &models.User{}
@@ -26,5 +34,47 @@ func (a *Auth) Signup(ctx context.Context, w http.ResponseWriter, req *http.Requ
 }
 
 func (a *Auth) Login(ctx context.Context, w http.ResponseWriter, req *http.Request) {
-	fmt.Fprint(w, "Auth Login")
+	form := &models.SignInForm{}
+	ParseBody(form, req)
+	authToken, err := IssueToken(ctx, form.Email, form.Password)
+	if err != nil {
+		ServeError(ctx, w, errors.New(fmt.Sprintf("Error on signin. Error: %s", err.Error())))
+	}
+	ServeJSON(ctx, w, authToken)
+}
+
+func IssueToken(ctx context.Context, email, password string) (*models.AuthToken, error) {
+	user, err := db.Users.GetByEmail(strings.ToLower(email))
+	if err != nil {
+		return nil, err
+	}
+	if user.DisableAt != nil {
+		return nil, errors.New("Disabled user")
+	}
+	tokenID := db.NewUUID()
+
+	jwt, err := createAuthToken(ctx, tokenID, user.ID, user.Role)
+	if err != nil {
+		return nil, err
+	}
+	authToken, err := jwt.Serialize([]byte(signingKey))
+	if err != nil {
+		return nil, err
+	}
+	return &models.AuthToken{AccessToken: string(authToken)}, nil
+}
+
+// CreateAuthToken generates a JWT access token
+func createAuthToken(ctx context.Context, tokenID, userID, scope string) (jwt.JWT, error) {
+	now := time.Now()
+	expiry := now.Add(tokenExpiration).Unix()
+
+	claims := jws.Claims{}
+	claims.SetSubject(userID)
+	claims.SetJWTID(tokenID)
+	claims.SetIssuedAt(float64(now.Unix()))
+	claims.SetExpiration(float64(expiry))
+	claims.Set("scope", scope)
+	jwt := jws.NewJWT(claims, crypto.SigningMethodHS256)
+	return jwt, nil
 }
