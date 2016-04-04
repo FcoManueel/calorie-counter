@@ -1,13 +1,13 @@
 package middleware
 
 import (
-	"errors"
 	"log"
 	"net/http"
 
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/ccontext"
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/controllers"
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/db"
+	"github.com/FcoManueel/calorie-counter/calorie-counter-api/errors"
 	"github.com/dgrijalva/jwt-go"
 	"goji.io"
 	"golang.org/x/net/context"
@@ -32,14 +32,14 @@ func validateBearerToken(ctx context.Context, req *http.Request) (context.Contex
 	}
 	userID := token.Claims["sub"].(string)
 	if !db.IsUUID(userID) {
-		return nil, errors.New("Invalid userID in bearerToken")
+		return nil, errors.New(errors.BAD_REQUEST, "Invalid userID in bearerToken")
 	}
 	user, err := db.Users.Get(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 	if user.DisableAt != nil {
-		return nil, errors.New("Disabled user")
+		return nil, errors.New(errors.FORBIDDEN, "Disabled user")
 	}
 	role := token.Claims["scope"].(string)
 	ctx = ccontext.SetRole(ctx, role)

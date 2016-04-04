@@ -1,13 +1,12 @@
 package controllers
 
 import (
-	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/db"
+	"github.com/FcoManueel/calorie-counter/calorie-counter-api/errors"
 	"github.com/FcoManueel/calorie-counter/calorie-counter-api/models"
 	"github.com/SermoDigital/jose/crypto"
 	"github.com/SermoDigital/jose/jws"
@@ -26,7 +25,7 @@ func (a *Auth) Signup(ctx context.Context, w http.ResponseWriter, req *http.Requ
 	user.Role = models.RoleUser
 	var err error
 	if user, err = db.Users.Create(ctx, user); err != nil {
-		ServeError(ctx, w, errors.New(fmt.Sprintf("Error on signup. Error: %s", err.Error())))
+		ServeError(ctx, w, err)
 		return
 	}
 
@@ -38,7 +37,7 @@ func (a *Auth) Login(ctx context.Context, w http.ResponseWriter, req *http.Reque
 	ParseBody(ctx, form, req)
 	authToken, err := IssueToken(ctx, form.Email, form.Password)
 	if err != nil {
-		ServeError(ctx, w, errors.New(fmt.Sprintf("Login error: %s", err.Error())))
+		ServeError(ctx, w, err)
 		return
 	}
 	ServeJSON(ctx, w, authToken)
@@ -47,17 +46,20 @@ func (a *Auth) Login(ctx context.Context, w http.ResponseWriter, req *http.Reque
 func IssueToken(ctx context.Context, email, password string) (*models.AuthToken, error) {
 	user, err := db.Users.GetByEmail(ctx, strings.ToLower(email))
 	if err != nil {
+		if err, ok := err.(errors.AppError); ok && err.Code != errors.INTERNAL_SERVER_ERROR {
+			return nil, errors.New(errors.UNAUTHORIZED, "Wrong credentials")
+		}
 		return nil, err
 	}
 	if user.DisableAt != nil {
-		return nil, errors.New("Disabled user")
+		return nil, errors.New(errors.FORBIDDEN, "User has been disabled")
 	}
 	var hashedPassword string
 	if hashedPassword, err = db.Hash(password, []byte(user.ID)); err != nil {
-		return nil, errors.New(fmt.Sprintf("Error while hashing: %s", err.Error()))
+		return nil, errors.New(errors.INTERNAL_SERVER_ERROR, "Error while hashing: %s", err.Error())
 	}
 	if user.Password != hashedPassword {
-		return nil, errors.New("Wrong password")
+		return nil, errors.New(errors.UNAUTHORIZED, "Wrong credentials")
 	}
 
 	tokenID := db.NewUUID()
