@@ -1,0 +1,90 @@
+<div data-ng-init="init()" class="container">
+    <section>
+        <h1>Dashboard</h1>
+    </section>
+
+    <div>
+        <div class="card-panel col s12">
+            <h4>Welcome back, {{user.name}}!</h4>
+            <span style="font-size: 1.5em" >
+                Max per day: {{user.goalCalories}}
+            </span>
+        <br/>
+            <span style="font-size: 1.5em" ng-class="(todayCalories < user.goalCalories) ? 'green-text' :'red-text'" class="text-darken-2">
+                Consumed today: {{todayCalories}}
+            </span>
+
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div>
+        <div class="row">
+            <form class="col s12">
+                <div class="row">
+                    <div class="input-field col s3">
+                        <input placeholder="Hamburguer" id="food_name" type="text" class="validate" data-ng-model="newIntake.name">
+                        <label class="active" for="food_name">Food Name</label>
+                    </div>
+                    <div class="input-field col s1">
+                        <input placeholder="800" id="calories" type="number" class="validate" data-ng-model="newIntake.calories">
+                        <label class="active" for="calories">Calories</label>
+                    </div>
+                    <div class="input-field col s3">
+                        <input type="date" class="datepicker" data-ng-model="newIntake.date">
+                    </div>
+                    <div class="input-field col s2">
+                        <input type="time" name="usr_time" data-ng-model="newIntake.time">
+                    </div>
+                    <div class="input-field col s3">
+                        <button data-ng-click="onAddNewIntake(newIntake)" class="waves-effect waves-light btn orange" >
+                            <i class="material-icons left">add_circle</i> Add
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="divider"></div>
+
+        <h3>Intakes</h3>
+        <div class="col s12">
+            <div class="row">
+                <div class="input-field col s6">
+                    <input id="text_filter" ng-model="search.name">
+                    <label class="active" for="text_filter">Filter by name: </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s3">
+                    <input id="date_filter_from" type="date" ng-model="rangeDate.from">
+                    <label class="active" for="date_filter_from">From day: </label>
+                </div>
+                <div class="input-field col s3">
+                    <input id="date_filter_to" type="date" ng-model="rangeDate.to">
+                    <label class="active" for="date_filter_to">Until day: </label>
+                </div>
+                <div class="input-field col s3">
+                    <input id="time_filter_from" type="time" ng-model="rangeTime.from">
+                    <label class="active" for="time_filter_from">From hour: </label>
+                </div>
+                <div class="input-field col s3">
+                    <input id="time_filter_to" type="time" ng-model="rangeTime.to">
+                    <label class="active" for="time_filter_to">Until hour: </label>
+                </div>
+            </div>
+        </div>
+        <ul class="intakes collection">
+            <li data-ng-repeat="intake in intakes | orderBy:'consumedAt':true | filter:{'name': search.name} | filter:dateFilter(rangeDate.from,rangeDate.to) | filter:timeFilter(rangeTime.from,rangeTime.to) " class="collection-item avatar">
+                <i class="material-icons circle orange">restaurant</i>
+                <span class="title">{{intake.name}}</span>
+                <p>{{intake.calories}} calories<br>
+                    <span class='grey-text'>{{formatDate(intake.consumedAt)}}</span>
+                </p>
+            </li>
+        </ul>
+    </div>
+
+    <footer></footer>
+</div>

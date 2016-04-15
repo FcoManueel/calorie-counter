@@ -1,0 +1,18 @@
+<div class="container row" data-ng-init="init()">
+	<form class="col s12">
+		<h2>Login</h2>
+		<div class="row">
+			<div class="input-field col s6">
+				<input id="username" placeholder="Username" type="text" data-ng-model="user.username" />
+				<label class="active" for="username">Username</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="input-field col s6">
+				<input id="password" placeholder="********" type="password" data-ng-model="user.passwd">
+				<label class="active" for="password">Password</label>
+			</div>
+		</div>
+		<button data-ng-click="onLogin(user)" class="btn-large waves-effect waves-light orange">Login</button>
+	</form>
+</div>

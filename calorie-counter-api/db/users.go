@@ -38,6 +38,7 @@ func (u *userRepository) Get(ctx context.Context, userID string) (*models.User, 
 	if _, err := db.QueryOne(user, fmt.Sprintf(`SELECT %s FROM users WHERE id=?`, userColumns), userID); err != nil {
 		return nil, errors.New(errors.DATABASE_ERROR, "Error: %s", err.Error())
 	}
+	user.Password = ""
 	return user, nil
 }
 
@@ -57,6 +58,9 @@ func (u *userRepository) GetAll(ctx context.Context) (models.Users, error) {
 	if _, err := db.Query(&users, fmt.Sprintf(`SELECT %s FROM users WHERE disabled_at IS NULL`, userColumns)); err != nil {
 		return nil, errors.New(errors.DATABASE_ERROR, "Error: %s", err.Error())
 	}
+	for i := range users {
+		users[i].Password = ""
+	}
 	return users, nil
 }
 
@@ -67,7 +71,9 @@ func (u *userRepository) Create(ctx context.Context, user *models.User) (*models
 	} else if !IsUUID(user.ID) {
 		return nil, errors.New(errors.BAD_REQUEST, "Invalid user ID: %s", user.ID)
 	}
+	log.Println("No password")
 	if user.Password != "" {
+		log.Println("Password", user.Password)
 		key, err := Hash(user.Password, []byte(user.ID))
 		if err != nil {
 			return nil, errors.New(errors.INTERNAL_SERVER_ERROR, "Error while hashing: %s", err.Error())

@@ -1,0 +1,30 @@
+<div class="container row" data-ng-init="init()">
+	<form class="col s12">
+		<h2>Signup</h2>
+		<div class="row">
+			<div class="input-field col s6">
+				<input id="username" placeholder="Username" type="text" data-ng-model="user.username" />
+				<label class="active" for="username">Username</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="input-field col s6">
+				<input id="name" placeholder="Name" type="text" data-ng-model="user.name" />
+				<label class="active" for="name">Name</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="input-field col s6">
+				<input id="password" placeholder="********" type="password" data-ng-model="user.passwd">
+				<label class="active" for="password">Password</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="input-field col s6">
+				<input id="goalCalories" placeholder="2000" type="text" data-ng-model="user.goalCalories" />
+				<label class="active" for="goalCalories">Calories per day</label>
+			</div>
+		</div>
+		<button data-ng-click="onSignup(user)" class="btn-large waves-effect waves-light orange">Signup</button>
+	</form>
+</div>
